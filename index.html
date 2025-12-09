@@ -507,6 +507,33 @@
       color: var(--secondary);
       text-decoration: underline;
     }
+
+    .github-link {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .github-link a {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      background: var(--bg-light);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      text-decoration: none;
+      transition: all 0.3s ease;
+      font-weight: 500;
+    }
+
+    .github-link a:hover {
+      border-color: var(--primary);
+      background: rgba(99, 102, 241, 0.1);
+      transform: translateY(-2px);
+    }
   </style>
 </head>
 <body>
@@ -514,7 +541,10 @@
     <header>
       <h1>Prompt Crafting Assistant</h1>
       <p class="subtitle">Build better prompts using guidelines from ChatGPT, Gemini, and Claude</p>
-      <a href="prompts.html" style="display: inline-block; margin-top: 20px; padding: 10px 20px; background: var(--bg-light); border: 1px solid var(--border); border-radius: 8px; color: var(--text); text-decoration: none; transition: all 0.3s ease;">📚 View Saved Prompts</a>
+      <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; margin-top: 20px;">
+        <a href="prompts.html" style="display: inline-block; padding: 10px 20px; background: var(--bg-light); border: 1px solid var(--border); border-radius: 8px; color: var(--text); text-decoration: none; transition: all 0.3s ease;">📚 View Saved Prompts</a>
+        <a href="llms.html" style="display: inline-block; padding: 10px 20px; background: var(--bg-light); border: 1px solid var(--border); border-radius: 8px; color: var(--text); text-decoration: none; transition: all 0.3s ease;">🤖 AI Models & LLMs</a>
+      </div>
     </header>
 
     <div class="main-grid">
@@ -779,6 +809,12 @@
       <div class="disclaimer">
         <p>This website was created with the help of <a href="https://cursor.sh" target="_blank" rel="noopener noreferrer">Cursor</a>.</p>
       </div>
+      <div class="github-link">
+        <a href="https://github.com/tacksoo/prompt-helper" target="_blank" rel="noopener noreferrer">
+          <span>🐙</span>
+          <span>Report Issues & Request Features on GitHub</span>
+        </a>
+      </div>
     </footer>
   </div>
 
@@ -837,24 +873,26 @@
         return;
       }
 
-      let prompt = '';
+      let prompt = '<prompt>\n';
 
       // Role
       if (role) {
-        prompt += `${role}\n\n`;
+        prompt += `  <role>${escapeXml(role)}</role>\n`;
       }
 
       // Task
-      prompt += `Task: ${task}\n\n`;
+      prompt += `  <task>${escapeXml(task)}</task>\n`;
 
       // Context
       if (context) {
-        prompt += `Context: ${context}\n\n`;
+        prompt += `  <context>${escapeXml(context)}</context>\n`;
       }
 
       // Examples
       if (examples) {
-        prompt += `Examples:\n${examples}\n\n`;
+        const escapedExamples = escapeXml(examples);
+        const indentedExamples = escapedExamples.split('\n').map(line => `    ${line}`).join('\n');
+        prompt += `  <examples>\n${indentedExamples}\n  </examples>\n`;
       }
 
       // Output Format
@@ -867,22 +905,22 @@
           'paragraph': 'Format your response as paragraphs.',
           'code': 'Format your response as code with proper syntax highlighting.'
         };
-        prompt += `Output Format: ${formatInstructions[outputFormat]}\n\n`;
+        prompt += `  <output_format>${escapeXml(formatInstructions[outputFormat])}</output_format>\n`;
       }
 
       // Tone
       if (tone) {
-        prompt += `Tone: Write in a ${tone} tone.\n\n`;
+        prompt += `  <tone>${escapeXml(tone)}</tone>\n`;
       }
 
       // Length
       if (length) {
-        prompt += `Length: ${length}.\n\n`;
+        prompt += `  <length>${escapeXml(length)}</length>\n`;
       }
 
       // Constraints
       if (constraints) {
-        prompt += `Constraints and Requirements: ${constraints}\n\n`;
+        prompt += `  <constraints>${escapeXml(constraints)}</constraints>\n`;
       }
 
       // Advanced Techniques
@@ -910,14 +948,26 @@
       }
 
       if (techniques.length > 0) {
-        prompt += `Additional Instructions:\n${techniques.join('\n')}\n`;
+        prompt += `  <additional_instructions>\n${techniques.map(t => `    <instruction>${escapeXml(t)}</instruction>`).join('\n')}\n  </additional_instructions>\n`;
       }
 
-      previewBox.value = prompt.trim();
+      prompt += '</prompt>';
+
+      previewBox.value = prompt;
       previewBox.readOnly = false;
       previewBox.placeholder = 'Your generated prompt will appear here...';
       copyBtn.style.display = 'block';
       saveBtn.style.display = 'block';
+    }
+
+    // Escape XML special characters
+    function escapeXml(text) {
+      return String(text)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&apos;');
     }
 
     // Copy to clipboard

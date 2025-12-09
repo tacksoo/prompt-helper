@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Models & LLMs - Prompt Crafting Assistant</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --secondary: #8b5cf6;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --bg: #0f172a;
+      --bg-light: #1e293b;
+      --bg-lighter: #334155;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --border: #475569;
+      --shadow: rgba(0, 0, 0, 0.3);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, var(--bg) 0%, #1a1f3a 100%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding: 30px 0;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+
+    .nav-link {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: var(--bg-light);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .nav-link:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+    }
+
+    .models-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 25px;
+      margin-bottom: 40px;
+    }
+
+    @media (max-width: 768px) {
+      .models-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .model-card {
+      background: var(--bg-light);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 30px;
+      transition: all 0.3s ease;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .model-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--primary);
+      transform: scaleX(0);
+      transition: transform 0.3s ease;
+    }
+
+    .model-card:hover {
+      border-color: var(--primary);
+      box-shadow: 0 10px 30px var(--shadow);
+      transform: translateY(-5px);
+    }
+
+    .model-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .model-card.chatgpt::before {
+      background: linear-gradient(90deg, #10a37f, #10b981);
+    }
+
+    .model-card.gemini::before {
+      background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    }
+
+    .model-card.claude::before {
+      background: linear-gradient(90deg, #d97706, #f59e0b);
+    }
+
+    .model-card.grok::before {
+      background: linear-gradient(90deg, #000000, #333333);
+    }
+
+    .model-card.mistral::before {
+      background: linear-gradient(90deg, #7c3aed, #a855f7);
+    }
+
+    .model-card.deepseek::before {
+      background: linear-gradient(90deg, #0ea5e9, #06b6d4);
+    }
+
+    .model-icon {
+      font-size: 3.5rem;
+      margin-bottom: 15px;
+      display: block;
+    }
+
+    .model-name {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 10px;
+    }
+
+    .model-card.chatgpt .model-name {
+      color: #10b981;
+    }
+
+    .model-card.gemini .model-name {
+      color: #6366f1;
+    }
+
+    .model-card.claude .model-name {
+      color: #f59e0b;
+    }
+
+    .model-card.grok .model-name {
+      color: #ffffff;
+    }
+
+    .model-card.mistral .model-name {
+      color: #a855f7;
+    }
+
+    .model-card.deepseek .model-name {
+      color: #06b6d4;
+    }
+
+    .model-description {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .model-link {
+      display: inline-block;
+      padding: 12px 24px;
+      background: var(--bg-lighter);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      width: 100%;
+      text-align: center;
+    }
+
+    .model-card.chatgpt .model-link:hover {
+      background: rgba(16, 185, 129, 0.1);
+      border-color: #10b981;
+      color: #10b981;
+    }
+
+    .model-card.gemini .model-link:hover {
+      background: rgba(99, 102, 241, 0.1);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .model-card.claude .model-link:hover {
+      background: rgba(245, 158, 11, 0.1);
+      border-color: #f59e0b;
+      color: #f59e0b;
+    }
+
+    .model-card.grok .model-link:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: #ffffff;
+      color: #ffffff;
+    }
+
+    .model-card.mistral .model-link:hover {
+      background: rgba(168, 85, 247, 0.1);
+      border-color: #a855f7;
+      color: #a855f7;
+    }
+
+    .model-card.deepseek .model-link:hover {
+      background: rgba(6, 182, 212, 0.1);
+      border-color: #06b6d4;
+      color: #06b6d4;
+    }
+
+    .model-card.perplexity::before {
+      background: linear-gradient(90deg, #3b82f6, #6366f1);
+    }
+
+    .model-card.perplexity .model-name {
+      color: #3b82f6;
+    }
+
+    .model-card.perplexity .model-link:hover {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: #3b82f6;
+      color: #3b82f6;
+    }
+
+    .info-section {
+      background: var(--bg-light);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 30px;
+      margin-top: 40px;
+    }
+
+    .info-section h2 {
+      color: var(--primary);
+      margin-bottom: 15px;
+      font-size: 1.5rem;
+    }
+
+    .info-section p {
+      color: var(--text-muted);
+      line-height: 1.8;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>AI Models & LLMs</h1>
+      <p class="subtitle">Access and explore leading AI language models</p>
+      <a href="index.html" class="nav-link">← Back to Prompt Builder</a>
+    </header>
+
+    <div class="models-grid">
+      <!-- ChatGPT -->
+      <div class="model-card chatgpt">
+        <span class="model-icon">🤖</span>
+        <h2 class="model-name">ChatGPT</h2>
+        <p class="model-description">
+          OpenAI's advanced conversational AI model. Access ChatGPT through OpenAI's platform for natural language understanding and generation.
+        </p>
+        <a href="https://chat.openai.com" target="_blank" rel="noopener noreferrer" class="model-link">Visit ChatGPT →</a>
+      </div>
+
+      <!-- Gemini -->
+      <div class="model-card gemini">
+        <span class="model-icon">✨</span>
+        <h2 class="model-name">Gemini</h2>
+        <p class="model-description">
+          Google's multimodal AI model. Explore Gemini's capabilities through Google AI Studio for advanced reasoning and understanding.
+        </p>
+        <a href="https://aistudio.google.com" target="_blank" rel="noopener noreferrer" class="model-link">Visit Gemini →</a>
+      </div>
+
+      <!-- Claude -->
+      <div class="model-card claude">
+        <span class="model-icon">🧠</span>
+        <h2 class="model-name">Claude</h2>
+        <p class="model-description">
+          Anthropic's AI assistant focused on helpfulness, harmlessness, and honesty. Access Claude through Anthropic's platform.
+        </p>
+        <a href="https://claude.ai" target="_blank" rel="noopener noreferrer" class="model-link">Visit Claude →</a>
+      </div>
+
+      <!-- Grok -->
+      <div class="model-card grok">
+        <span class="model-icon">🚀</span>
+        <h2 class="model-name">Grok</h2>
+        <p class="model-description">
+          xAI's AI assistant with real-time knowledge access and direct access to Twitter (X). Grok is designed to answer questions with wit and a rebellious streak.
+        </p>
+        <a href="https://x.ai" target="_blank" rel="noopener noreferrer" class="model-link">Visit Grok →</a>
+      </div>
+
+      <!-- Mistral -->
+      <div class="model-card mistral">
+        <span class="model-icon">🌊</span>
+        <h2 class="model-name">Mistral</h2>
+        <p class="model-description">
+          Mistral AI's open-source and efficient language models. Access Mistral models for high-performance AI applications.
+        </p>
+        <a href="https://mistral.ai" target="_blank" rel="noopener noreferrer" class="model-link">Visit Mistral →</a>
+      </div>
+
+      <!-- DeepSeek -->
+      <div class="model-card deepseek">
+        <span class="model-icon">🔍</span>
+        <h2 class="model-name">DeepSeek</h2>
+        <p class="model-description">
+          DeepSeek's powerful language models focused on reasoning and coding capabilities. Explore DeepSeek's AI models.
+        </p>
+        <a href="https://www.deepseek.com" target="_blank" rel="noopener noreferrer" class="model-link">Visit DeepSeek →</a>
+      </div>
+
+      <!-- Perplexity -->
+      <div class="model-card perplexity">
+        <span class="model-icon">💡</span>
+        <h2 class="model-name">Perplexity</h2>
+        <p class="model-description">
+          AI-powered search engine and research assistant that combines language models with real-time web search. Get accurate answers with source citations.
+        </p>
+        <a href="https://www.perplexity.ai" target="_blank" rel="noopener noreferrer" class="model-link">Visit Perplexity →</a>
+      </div>
+    </div>
+
+    <div class="info-section">
+      <h2>About These Models</h2>
+      <p>
+        These are some of the leading large language models (LLMs) available today. Each model has its own strengths and specializations:
+      </p>
+      <p>
+        <strong>ChatGPT</strong> by OpenAI is known for its conversational abilities and wide range of applications. 
+        <strong>Gemini</strong> by Google excels at multimodal understanding and reasoning. 
+        <strong>Claude</strong> by Anthropic emphasizes safety and helpfulness.
+      </p>
+      <p>
+        <strong>Grok</strong> by xAI offers real-time information access with direct access to Twitter (X). 
+        <strong>Mistral</strong> provides efficient open-source models. 
+        <strong>DeepSeek</strong> focuses on reasoning and coding capabilities.
+        <strong>Perplexity</strong> combines AI with real-time web search for accurate, cited answers.
+      </p>
+      <p>
+        Use the prompt builder on the main page to create optimized prompts for any of these models!
+      </p>
+    </div>
+  </div>
+</body>
+</html>
